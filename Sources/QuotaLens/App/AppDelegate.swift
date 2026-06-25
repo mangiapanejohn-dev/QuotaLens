@@ -91,13 +91,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func observeAggregate() {
-        store.$aggregateRatio
-            .removeDuplicates()
+        store.$aggregateRatio.combineLatest(store.$aggregateTool)
+            .removeDuplicates { $0 == $1 }
             .receive(on: RunLoop.main)
-            .sink { [weak self] ratio in
+            .sink { [weak self] ratio, tool in
                 MainActor.assumeIsolated {
-                    guard let self else { return }
-                    self.statusItem.button?.image = StatusIcon.image(ratio: ratio, toolName: self.store.aggregateTool)
+                    self?.statusItem.button?.image = StatusIcon.image(ratio: ratio, toolName: tool)
                 }
             }
             .store(in: &cancellables)

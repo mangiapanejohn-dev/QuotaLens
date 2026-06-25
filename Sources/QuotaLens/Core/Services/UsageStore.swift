@@ -32,6 +32,8 @@ final class UsageStore: ObservableObject {
     private let resetDetector: ResetDetectionService
     /// Per-account Claude probes, keyed by toolName (for expiry status).
     private var claudeProbes: [String: ClaudeOfficialProbe] = [:]
+    /// Per-account official-% history (toolName → samples), for the trend chart.
+    private var probeHistory: [String: [ProbeSample]] = [:]
 
     private var pollTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
@@ -46,9 +48,19 @@ final class UsageStore: ObservableObject {
 
         rebuild(accounts: settings.claudeAccounts)
         observeAccounts()
+        observeSelection()
 
+        probeHistory = persistence.loadProbeHistory()
         snapshots = persistence.load()   // instant cold-start display
         recomputeAggregate()
+    }
+
+    /// The menu bar mirrors the selected tool; recompute when it changes.
+    private func observeSelection() {
+        $selectedTool
+            .dropFirst()
+            .sink { [weak self] sel in self?.recomputeAggregate(selection: sel) }
+            .store(in: &cancellables)
     }
 
     func start() {
@@ -179,6 +191,9 @@ final class UsageStore: ObservableObject {
                 for: results[i].toolName, within: Double(hours) * 3600, now: now)
         }
 
+        // 5) Record official-% history for Claude accounts → per-card trend.
+        recordProbeTrends(into: &results, now: now, windowHours: hours)
+
         snapshots = results
         lastUpdated = now
         recomputeAggregate()
@@ -188,9 +203,39 @@ final class UsageStore: ObservableObject {
         notifier.evaluateExpiry(snapshots: enabledSnaps)
     }
 
-    /// Official-first: highest displayed ratio across 5h/7d of enabled tools.
-    private func recomputeAggregate() {
+    /// Append the current official 5h/7d reading for each Claude account to its
+    /// history (deduped to ~one sample per probe), prune to the window, and fill
+    /// the snapshot's trend arrays. Codex keeps its token-volume sparkline.
+    private func recordProbeTrends(into results: inout [ToolSnapshot], now: Date, windowHours: Int) {
+        let windowSec = Double(windowHours) * 3600
+        var changed = false
+        for i in results.indices where results[i].toolName.hasPrefix("claude") {
+            guard let h5 = results[i].usage(.fiveHour)?.official?.percent,
+                  let d7 = results[i].usage(.sevenDay)?.official?.percent else { continue }
+            var samples = probeHistory[results[i].toolName] ?? []
+            if samples.last.map({ now.timeIntervalSince($0.t) >= 240 }) ?? true {
+                samples.append(ProbeSample(t: now, h5: h5, d7: d7))
+                changed = true
+            }
+            samples.removeAll { now.timeIntervalSince($0.t) > windowSec }
+            probeHistory[results[i].toolName] = samples
+            results[i].trend5h = samples.map(\.h5)
+            results[i].trend7d = samples.map(\.d7)
+        }
+        if changed { persistence.saveProbeHistory(probeHistory) }
+    }
+
+    private func recomputeAggregate() { recomputeAggregate(selection: selectedTool) }
+
+    /// Menu bar: when a tool is selected, mirror ITS weekly (7d) usage; on "All",
+    /// show the highest headline (max 5h/7d) across enabled tools.
+    private func recomputeAggregate(selection: String?) {
         let enabled = snapshots.filter { settings.isEnabled($0.toolName) }
+        if let sel = selection, let snap = enabled.first(where: { $0.toolName == sel }) {
+            aggregateRatio = snap.usage(.sevenDay)?.usageRatio ?? snap.headlineRatio
+            aggregateTool = snap.toolName
+            return
+        }
         if let top = enabled.max(by: { $0.headlineRatio < $1.headlineRatio }) {
             aggregateRatio = top.headlineRatio
             aggregateTool = top.toolName

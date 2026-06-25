@@ -33,9 +33,18 @@ struct ToolCard: View {
 
             if hasTrend {
                 VStack(alignment: .leading, spacing: 5) {
-                    Eyebrow(text: "Last \(timelineHours)h")
-                    Sparkline(values: snapshot.hourlyBuckets, color: tint, replay: nonce)
-                        .frame(height: 26)
+                    HStack(spacing: 8) {
+                        Eyebrow(text: "Last \(timelineHours)h")
+                        Spacer()
+                        if isPercentTrend { trendLegend }
+                    }
+                    if isPercentTrend {
+                        MiniTrend(five: snapshot.trend5h, seven: snapshot.trend7d, color: tint, replay: nonce)
+                            .frame(height: 34)
+                    } else {
+                        Sparkline(values: snapshot.hourlyBuckets, color: tint, replay: nonce)
+                            .frame(height: 26)
+                    }
                 }
             }
         }
@@ -77,5 +86,22 @@ struct ToolCard: View {
         return snapshot.available ? Palette.textSecondary : Palette.textTertiary
     }
 
-    private var hasTrend: Bool { snapshot.hourlyBuckets.contains { $0 > 0 } }
+    /// Claude accounts chart their probed 5h/7d % over time; others use buckets.
+    private var isPercentTrend: Bool { snapshot.trend5h.count >= 2 }
+    private var hasTrend: Bool { isPercentTrend || snapshot.hourlyBuckets.contains { $0 > 0 } }
+
+    private var trendLegend: some View {
+        HStack(spacing: 8) {
+            legendDot(tint, "5h")
+            legendDot(tint.opacity(0.4), "7d")
+        }
+    }
+
+    private func legendDot(_ c: Color, _ label: String) -> some View {
+        HStack(spacing: 3) {
+            Circle().fill(c).frame(width: 5, height: 5)
+            Text(label).font(.qlMono(8.5)).foregroundStyle(Palette.textTertiary)
+        }
+    }
 }
+

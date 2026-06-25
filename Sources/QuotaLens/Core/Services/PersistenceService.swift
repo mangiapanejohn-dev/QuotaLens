@@ -6,10 +6,11 @@ import Foundation
 struct PersistenceService: Sendable {
     /// Bump when the persisted snapshot shape changes incompatibly. A mismatch
     /// makes `load()` return nothing, so the store rebuilds from logs/probe.
-    static let schemaVersion = 2
+    static let schemaVersion = 3
 
     private let snapshotURL: URL
     private let cyclesURL: URL
+    private let probeHistoryURL: URL
 
     private struct SnapshotEnvelope: Codable {
         var version: Int
@@ -24,6 +25,21 @@ struct PersistenceService: Sendable {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         self.snapshotURL = dir.appendingPathComponent("snapshots.json")
         self.cyclesURL = dir.appendingPathComponent("cycles.json")
+        self.probeHistoryURL = dir.appendingPathComponent("probe-history.json")
+    }
+
+    // MARK: - Probe history (per-account official %, for the trend chart)
+
+    func loadProbeHistory() -> [String: [ProbeSample]] {
+        guard let data = try? Data(contentsOf: probeHistoryURL),
+              let history = try? JSONDecoder().decode([String: [ProbeSample]].self, from: data)
+        else { return [:] }
+        return history
+    }
+
+    func saveProbeHistory(_ history: [String: [ProbeSample]]) {
+        guard let data = try? JSONEncoder().encode(history) else { return }
+        try? data.write(to: probeHistoryURL, options: .atomic)
     }
 
     // MARK: - Snapshots

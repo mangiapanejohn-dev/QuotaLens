@@ -12,6 +12,10 @@ struct ToolSnapshot: Codable, Sendable, Identifiable {
     var resetMarkers: [Date] = []
     /// Token expired (auth failed) — for token-based Claude accounts. Re-paste needed.
     var expired: Bool = false
+    /// Recorded official 5h / 7d utilization over the timeline window, for the
+    /// per-card trend chart (Claude accounts have no per-hour token buckets).
+    var trend5h: [Double] = []
+    var trend7d: [Double] = []
 
     var id: String { toolName }
 
