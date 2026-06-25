@@ -11,6 +11,10 @@
 <img src="https://img.shields.io/badge/type-menu--bar%20app-46DCB6?style=flat-square" alt="menu-bar app" />
 <img src="https://img.shields.io/badge/license-MIT-7C6CF5?style=flat-square" alt="MIT" />
 
+<br />
+
+<img src="docs/demo.gif" width="328" alt="QuotaLens menu-bar panel" />
+
 **English** · [简体中文](#-简体中文)
 
 </div>
