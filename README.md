@@ -51,13 +51,22 @@ It tracks two tools side by side:
 
 ## <img src="docs/icons/download.svg" height="20" align="top" /> Install
 
-**Build it yourself** (recommended — local builds skip Gatekeeper notarization):
+**Homebrew:**
+
+```sh
+brew tap mangiapanejohn-dev/tap
+brew install --cask quotalens
+```
+
+**Build it yourself** (skips Gatekeeper notarization entirely):
 
 ```sh
 git clone https://github.com/mangiapanejohn-dev/QuotaLens.git
 cd QuotaLens
 make install      # builds and copies QuotaLens.app to /Applications
 ```
+
+Or download `QuotaLens.dmg` from the [latest release](https://github.com/mangiapanejohn-dev/QuotaLens/releases/latest).
 
 Or produce a drag-to-install disk image:
 
@@ -151,7 +160,14 @@ token、成本、缓存。
 
 ## <img src="docs/icons/download.svg" height="20" align="top" /> 安装
 
-**自行构建**(推荐 —— 本地构建绕过 Gatekeeper 公证):
+**Homebrew:**
+
+```sh
+brew tap mangiapanejohn-dev/tap
+brew install --cask quotalens
+```
+
+**自行构建**(绕过 Gatekeeper 公证):
 
 ```sh
 git clone https://github.com/mangiapanejohn-dev/QuotaLens.git
