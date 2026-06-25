@@ -1,0 +1,16 @@
+# Build
+.build/
+build/
+QuotaLens.app/
+*.dmg
+
+# Brand marks are pulled from locally-installed Claude/Codex apps at build
+# time (see `make logos`), not redistributed here.
+Resources/ClaudeMark*.png
+Resources/CodexMark*.png
+
+# macOS / Xcode
+.DS_Store
+*.xcuserstate
+.swiftpm/
+xcuserdata/
