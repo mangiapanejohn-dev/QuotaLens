@@ -28,6 +28,10 @@ final class UsageStore: ObservableObject {
     private let notifier = NotificationService()
 
     private let codexProvider: CodexProvider
+    /// Shared local Claude Code token data (`~/.claude/projects`), attached to
+    /// every Claude plan card so they show a session bar + token sparkline.
+    /// Not registered as a provider, so it never becomes its own card/tab.
+    private let claudeCodeProvider: ClaudeCodeProvider
     private var officialSync: OfficialSyncService
     private let resetDetector: ResetDetectionService
     /// Per-account Claude probes, keyed by toolName (for expiry status).
@@ -43,6 +47,7 @@ final class UsageStore: ObservableObject {
         let cfg = settings.providerConfig
 
         self.codexProvider = CodexProvider(config: cfg)
+        self.claudeCodeProvider = ClaudeCodeProvider(config: cfg)
         self.officialSync = OfficialSyncService(sources: [])
         self.resetDetector = ResetDetectionService(persistence: persistence)
 
@@ -167,17 +172,37 @@ final class UsageStore: ObservableObject {
         let enabled = Set(order.map(\.name))
         let official = await officialSync.sync(now: now, latestActivity: activity, enabled: enabled)
 
+        // 2b) Shared local Claude Code usage (`~/.claude/projects`), used as the
+        //     local estimate for every Claude plan card — pasted tokens have no
+        //     attributable logs of their own. Official probe readings still win.
+        await claudeCodeProvider.update(config: cfg)
+        let claudeLocal = await claudeCodeProvider.fetchUsage()
+        let claudeBuckets = await claudeCodeProvider.recentHourlyBuckets(hours: hours)
+
         // 3) Reconcile official over local.
         var results: [ToolSnapshot] = []
         for (name, label) in order {
-            let localUsages = local[name] ?? []
+            var localUsages = local[name] ?? []
+            var snapBuckets = buckets[name] ?? []
+            if name.hasPrefix("claude") {
+                // Re-key the shared local usage to this account; drop empty session.
+                localUsages = claudeLocal.compactMap { u in
+                    if u.windowType == .session && u.usedTokens <= 0 { return nil }
+                    return ToolUsage(
+                        toolName: name, windowType: u.windowType,
+                        usedTokens: u.usedTokens, limitTokens: u.limitTokens,
+                        lastUpdated: u.lastUpdated, localResetsAt: u.localResetsAt,
+                        costUSD: u.costUSD)
+                }
+                snapBuckets = claudeBuckets
+            }
             let reconciled = Reconciler.reconcile(local: localUsages, official: official[name] ?? [:])
             let expired = await claudeProbes[name]?.isExpired() ?? false
             let available = expired || reconciled.contains { $0.usedTokens > 0 || $0.official != nil }
             results.append(ToolSnapshot(
                 toolName: name, displayName: label,
                 usages: reconciled,
-                hourlyBuckets: buckets[name] ?? [],
+                hourlyBuckets: snapBuckets,
                 available: available,
                 updatedAt: now,
                 expired: expired
@@ -227,17 +252,19 @@ final class UsageStore: ObservableObject {
 
     private func recomputeAggregate() { recomputeAggregate(selection: selectedTool) }
 
-    /// Menu bar: when a tool is selected, mirror ITS weekly (7d) usage; on "All",
-    /// show the highest headline (max 5h/7d) across enabled tools.
+    /// Menu bar: when a tool is selected, mirror ITS 5-hour usage; on "All",
+    /// show the highest 5-hour usage across enabled tools.
     private func recomputeAggregate(selection: String?) {
         let enabled = snapshots.filter { settings.isEnabled($0.toolName) }
         if let sel = selection, let snap = enabled.first(where: { $0.toolName == sel }) {
-            aggregateRatio = snap.usage(.sevenDay)?.usageRatio ?? snap.headlineRatio
+            aggregateRatio = snap.usage(.fiveHour)?.usageRatio ?? snap.headlineRatio
             aggregateTool = snap.toolName
             return
         }
-        if let top = enabled.max(by: { $0.headlineRatio < $1.headlineRatio }) {
-            aggregateRatio = top.headlineRatio
+        if let top = enabled.max(by: {
+            ($0.usage(.fiveHour)?.usageRatio ?? 0) < ($1.usage(.fiveHour)?.usageRatio ?? 0)
+        }) {
+            aggregateRatio = top.usage(.fiveHour)?.usageRatio ?? 0
             aggregateTool = top.toolName
         } else {
             aggregateRatio = 0

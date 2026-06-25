@@ -31,20 +31,23 @@ struct ToolCard: View {
                 UsageBar(usage: session, tint: tint, replay: nonce)
             }
 
-            if hasTrend {
+            if isPercentTrend {
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 8) {
                         Eyebrow(text: "Last \(timelineHours)h")
                         Spacer()
-                        if isPercentTrend { trendLegend }
+                        trendLegend
                     }
-                    if isPercentTrend {
-                        MiniTrend(five: snapshot.trend5h, seven: snapshot.trend7d, color: tint, replay: nonce)
-                            .frame(height: 34)
-                    } else {
-                        Sparkline(values: snapshot.hourlyBuckets, color: tint, replay: nonce)
-                            .frame(height: 26)
-                    }
+                    MiniTrend(five: snapshot.trend5h, seven: snapshot.trend7d, color: tint, replay: nonce)
+                        .frame(height: 34)
+                }
+            }
+
+            if snapshot.hourlyBuckets.contains(where: { $0 > 0 }) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Eyebrow(text: isPercentTrend ? "Tokens · last \(timelineHours)h" : "Last \(timelineHours)h")
+                    Sparkline(values: snapshot.hourlyBuckets, color: tint, replay: nonce)
+                        .frame(height: 26)
                 }
             }
         }
@@ -88,7 +91,6 @@ struct ToolCard: View {
 
     /// Claude accounts chart their probed 5h/7d % over time; others use buckets.
     private var isPercentTrend: Bool { snapshot.trend5h.count >= 2 }
-    private var hasTrend: Bool { isPercentTrend || snapshot.hourlyBuckets.contains { $0 > 0 } }
 
     private var trendLegend: some View {
         HStack(spacing: 8) {

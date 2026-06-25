@@ -146,7 +146,13 @@ struct DetailPanelView: View {
         let snaps = store.visibleSnapshots
         guard let length = snaps.map(\.hourlyBuckets.count).max(), length > 0 else { return [] }
         var out = [Double](repeating: 0, count: length)
+        var claudeCounted = false
         for snap in snaps {
+            // Every Claude card carries the same shared local data — count it once.
+            if snap.toolName.hasPrefix("claude") {
+                if claudeCounted { continue }
+                claudeCounted = true
+            }
             for (i, v) in snap.hourlyBuckets.enumerated() where i < length { out[i] += v }
         }
         return out
