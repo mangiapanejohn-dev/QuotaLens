@@ -42,7 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 940, height: 700),
+            contentRect: NSRect(x: 0, y: 0, width: 1000, height: 860),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered, defer: false)
         window.title = "QuotaLens — Statistics"

@@ -13,7 +13,7 @@
 
 <br />
 
-<img src="docs/demo.gif" width="328" alt="QuotaLens menu-bar panel" />
+<img src="docs/demo.gif" width="300" alt="QuotaLens menu-bar panel" />
 
 **English** · [简体中文](#-简体中文)
 
@@ -32,6 +32,10 @@ It tracks two tools side by side:
 
 - **Claude** — one card per account, each probed with its own `claude setup-token`.
 - **Codex** — read locally from `~/.codex/sessions`, no network.
+
+<div align="center">
+  <img src="docs/stats.gif" width="640" alt="QuotaLens statistics window" />
+</div>
 
 ## <img src="docs/icons/layers.svg" height="20" align="top" /> Features
 
@@ -144,6 +148,10 @@ token、成本、缓存。
 
 - **Claude** —— 每个账号一张卡,各自用自己的 `claude setup-token` 探测。
 - **Codex** —— 直接读本机 `~/.codex/sessions`,不联网。
+
+<div align="center">
+  <img src="docs/stats.gif" width="640" alt="QuotaLens 统计窗口" />
+</div>
 
 ## <img src="docs/icons/layers.svg" height="20" align="top" /> 功能
 

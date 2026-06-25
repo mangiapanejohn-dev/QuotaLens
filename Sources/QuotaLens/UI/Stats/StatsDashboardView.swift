@@ -23,7 +23,7 @@ struct StatsDashboardView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 18) {
                     header.appear(delay: 0.0)
                     rangeRow.appear(delay: 0.04)
                     if !liveAccounts.isEmpty { liveCard.appear(delay: 0.10) }
@@ -31,7 +31,7 @@ struct StatsDashboardView: View {
                     cards.appear(delay: 0.20)
                     trendCard.appear(delay: 0.26)
                 }
-                .padding(22)
+                .padding(24)
             }
             .scrollIndicators(.never)
             .animation(.qlSmooth, value: model.range)
@@ -217,14 +217,13 @@ struct StatsDashboardView: View {
                 }
             }
             Spacer()
-            HStack(spacing: 22) {
+            HStack(spacing: 24) {
                 miniStat("Requests", Double(model.summary.requests), Palette.brand) { "\(Int($0))" }
+                Rectangle().fill(Palette.stroke.opacity(0.7)).frame(width: 1, height: 34)
                 miniStat("Total cost", model.summary.costUSD, Color(hex: 0x5CD6A0), Format.dollars)
             }
-            .padding(16)
-            .tile(16)
         }
-        .padding(18)
+        .padding(20)
         .tile(20)
     }
 

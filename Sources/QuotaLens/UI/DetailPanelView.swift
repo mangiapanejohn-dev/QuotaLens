@@ -48,7 +48,7 @@ struct DetailPanelView: View {
                 emptyState
             } else {
                 ScrollView {
-                    VStack(spacing: 12) {
+                    VStack(spacing: 14) {
                         ForEach(Array(store.visibleSnapshots.enumerated()), id: \.element.id) { idx, snap in
                             ToolCard(snapshot: snap,
                                      timelineHours: settings.timelineHours,
@@ -59,7 +59,7 @@ struct DetailPanelView: View {
                         timelineSection
                     }
                     .padding(.horizontal, 18)
-                    .padding(.vertical, 6)
+                    .padding(.vertical, 8)
                     .animation(.qlSmooth, value: store.selectedTool)
                 }
                 .frame(maxHeight: .infinity)
