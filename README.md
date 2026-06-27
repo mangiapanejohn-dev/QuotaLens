@@ -57,6 +57,16 @@ It tracks two tools side by side:
   per-point detail. Everything stays in sync with your configured sources.
 - **Launch at login** — optional, via `SMAppService`.
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=mangiapanejohn-dev%2FQuotaLens&type=timeline&logscale=&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&theme=dark&logscale&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&logscale&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&logscale&legend=top-left" />
+ </picture>
+</a>
+
 ## <img src="docs/icons/download.svg" height="20" align="top" /> Install
 
 **Homebrew:**
