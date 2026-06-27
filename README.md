@@ -57,7 +57,7 @@ It tracks two tools side by side:
   per-point detail. Everything stays in sync with your configured sources.
 - **Launch at login** — optional, via `SMAppService`.
 
-## Star History
+[## Star History
 
 <a href="https://www.star-history.com/?repos=mangiapanejohn-dev%2FQuotaLens&type=timeline&logscale=&legend=top-left">
  <picture>
