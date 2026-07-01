@@ -4,7 +4,8 @@
 
 # QuotaLens
 
-**See your AI usage clearly.** A macOS menu-bar gauge for **Claude** and **Codex** quotas.
+**Ever hit a Claude rate-limit mid-flow with no warning?**  
+QuotaLens fixes that — a macOS menu-bar gauge that shows your **Claude** and **Codex** quotas at a glance, before you run out.
 
 <img src="https://img.shields.io/badge/macOS-13%2B-7C6CF5?style=flat-square" alt="macOS 13+" />
 <img src="https://img.shields.io/badge/Swift-6.0-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift 6" />
@@ -13,7 +14,7 @@
 
 <br />
 
-<img src="docs/demo.gif" width="300" alt="QuotaLens menu-bar panel" />
+<img src="docs/demo.gif" width="300" alt="QuotaLens menu-bar panel — ring gauge with per-source quota cards" />
 
 **English** · [简体中文](#-简体中文)
 
@@ -21,12 +22,17 @@
 
 ---
 
+## Why QuotaLens?
+
+Claude and Codex don't tell you how much quota you've used — until you're throttled. QuotaLens probes the official rate-limit headers and local session files so you always see a live ring + percentage in your menu bar, with per-account cards and a full statistics window one click away.
+
+No dashboards. No browser tabs. Just a number in the corner.
+
+---
+
 ## <img src="docs/icons/gauge.svg" height="20" align="top" /> Overview
 
-QuotaLens lives in your menu bar as a small ring + percentage of your highest current
-usage. Click it for a panel with per-source cards — the authoritative 5-hour / 7-day
-limits, the current session, and a 24-hour timeline. A separate statistics window breaks
-down tokens, cost, and cache over any time range.
+QuotaLens lives in your menu bar as a small ring + percentage of your highest current usage. Click it for a panel with per-source cards — the authoritative 5-hour / 7-day limits, the current session, and a 24-hour timeline. A separate statistics window breaks down tokens, cost, and cache over any time range.
 
 It tracks two tools side by side:
 
@@ -34,8 +40,10 @@ It tracks two tools side by side:
 - **Codex** — read locally from `~/.codex/sessions`, no network.
 
 <div align="center">
-  <img src="docs/stats.gif" width="640" alt="QuotaLens statistics window" />
+  <img src="docs/stats.gif" width="640" alt="QuotaLens statistics window — token and cost trend charts" />
 </div>
+
+---
 
 ## <img src="docs/icons/layers.svg" height="20" align="top" /> Features
 
@@ -46,45 +54,36 @@ It tracks two tools side by side:
 | Token / cost history | ✓ &nbsp;CLI account | ✓ |
 | Network use | tiny probe, throttled | none |
 
-- **Multiple Claude accounts** — add each with its own token; every account is its own
-  card. Up to 4 sources total.
-- **Authoritative limits** — Claude reads the real `anthropic-ratelimit-unified-*`
-  headers; Codex reads its official `rate_limits` from local rollout files.
-- **Token-expiry alerts** — a pasted token can't auto-renew, so when one expires the card
-  flags it and you get a notification to re-paste.
-- **Statistics window** — tokens / cost / cache with a smooth multi-series trend chart.
-  Pick Today / 3d / 7d / 30d / All or a custom range; short ranges render hourly. Hover for
-  per-point detail. Everything stays in sync with your configured sources.
+- **Multiple Claude accounts** — add each with its own token; every account is its own card. Up to 4 sources total.
+- **Authoritative limits** — Claude reads the real `anthropic-ratelimit-unified-*` headers; Codex reads its official `rate_limits` from local rollout files.
+- **Token-expiry alerts** — when a token expires the card flags it and sends a system notification to re-paste.
+- **Statistics window** — tokens / cost / cache with a smooth multi-series trend chart. Pick Today / 3d / 7d / 30d / All or a custom range; short ranges render hourly. Hover for per-point detail.
 - **Launch at login** — optional, via `SMAppService`.
 
-## Star History
-
-<a href="https://www.star-history.com/?repos=mangiapanejohn-dev%2FQuotaLens&type=timeline&logscale=&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&legend=top-left" />
- </picture>
-</a>
+---
 
 ## <img src="docs/icons/download.svg" height="20" align="top" /> Install
 
-**Homebrew:**
+> **Requirements:** macOS 13+, Xcode 16+ (Swift 6 toolchain) — only needed if building from source.
+
+### Option 1 — Homebrew (recommended)
 
 ```sh
 brew tap mangiapanejohn-dev/tap
 brew install --cask quotalens
 ```
 
-**Build it yourself** (skips Gatekeeper notarization entirely):
+### Option 2 — DMG
+
+Download `QuotaLens.dmg` from the [latest release](https://github.com/mangiapanejohn-dev/QuotaLens/releases/latest), open it, and drag to `/Applications`.
+
+### Option 3 — Build from source
 
 ```sh
 git clone https://github.com/mangiapanejohn-dev/QuotaLens.git
 cd QuotaLens
 make install      # builds and copies QuotaLens.app to /Applications
 ```
-
-Or download `QuotaLens.dmg` from the [latest release](https://github.com/mangiapanejohn-dev/QuotaLens/releases/latest).
 
 Or produce a drag-to-install disk image:
 
@@ -93,16 +92,16 @@ brew install create-dmg
 make dmg           # writes build/QuotaLens.dmg
 ```
 
-**Requirements:** macOS 13+, the Swift 6 toolchain (Xcode 16+).
+---
 
 ## <img src="docs/icons/layers.svg" height="20" align="top" /> Adding accounts
 
 1. In a terminal, run `claude setup-token` for the account you want to track and copy the token.
-2. Open QuotaLens → the gear icon → **Sources** → **Add Claude account**, give it a name
-   (e.g. `Pro`, `Max 5x`) and paste the token.
+2. Open QuotaLens → gear icon → **Sources** → **Add Claude account**, give it a name (e.g. `Pro`, `Max 5x`) and paste the token.
 
-Codex needs no setup — it reads `~/.codex/sessions` automatically. When a token expires,
-the card turns red; use **replace token** on that account to paste a fresh one.
+Codex needs no setup — it reads `~/.codex/sessions` automatically. When a token expires, the card turns red; use **replace token** to paste a fresh one.
+
+---
 
 ## <img src="docs/icons/activity.svg" height="20" align="top" /> How it works
 
@@ -112,14 +111,15 @@ the card turns red; use **replace token** on that account to paste a fresh one.
 | Codex live quota | official `rate_limits` in `~/.codex/sessions/**/*.jsonl` | none |
 | Statistics | token / cost from local Claude & Codex JSONL logs | none |
 
-The statistics window reflects **only the sources you've configured** — no Claude account
-means no Claude data, so the panel never shows numbers you didn't set up.
+The statistics window reflects **only the sources you've configured** — no Claude account means no Claude data.
+
+---
 
 ## <img src="docs/icons/shield.svg" height="20" align="top" /> Privacy
 
-Everything runs locally. The only network call is the Claude probe — a minimal, throttled
-request used solely to read the rate-limit headers. Tokens are stored locally in
-`UserDefaults`. Nothing is sent anywhere else.
+Everything runs locally. The only network call is the Claude probe — a minimal, throttled request used solely to read the rate-limit headers. Tokens are stored in `UserDefaults` on your machine. Nothing is sent anywhere else.
+
+---
 
 ## <img src="docs/icons/chart.svg" height="20" align="top" /> Make targets
 
@@ -131,14 +131,46 @@ make icon       # regenerate AppIcon.icns from Resources/AppIconSource.png
 make test       # run the unit tests
 ```
 
-The official Claude / Codex marks shown on the source cards are pulled from your locally
-installed `Claude.app` / `Codex.app` at build time (`make logos`) and are **not**
-redistributed in this repo; without those apps the UI falls back to SF Symbols.
+The official Claude / Codex marks shown on source cards are pulled from your locally installed `Claude.app` / `Codex.app` at build time (`make logos`) and are **not** redistributed in this repo; without those apps the UI falls back to SF Symbols.
+
+---
+
+## Roadmap
+
+- [ ] Gemini / OpenAI source support
+- [ ] Menu-bar color thresholds (green → yellow → red)
+- [ ] Weekly usage summary notifications
+- [ ] iCloud sync across Macs
+
+Have an idea? [Open an issue](https://github.com/mangiapanejohn-dev/QuotaLens/issues) — PRs welcome.
+
+---
+
+## Contributing
+
+1. Fork the repo and create a branch: `git checkout -b feat/your-idea`
+2. Make your changes and run `make test`
+3. Open a pull request with a clear description
+
+Please keep PRs focused — one feature or fix per PR. See [CONTRIBUTING.md](CONTRIBUTING.md) if it exists, otherwise just open an issue first for larger changes.
+
+---
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=mangiapanejohn-dev%2FQuotaLens&type=timeline&logscale=&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=mangiapanejohn-dev/QuotaLens&type=timeline&legend=top-left" />
+ </picture>
+</a>
+
+---
 
 ## License
 
-[MIT](LICENSE). The Claude and Codex names and logos are trademarks of their respective
-owners and are used here only to identify the tools being monitored.
+[MIT](LICENSE). The Claude and Codex names and logos are trademarks of their respective owners and are used here only to identify the tools being monitored.
 
 ---
 
@@ -146,13 +178,12 @@ owners and are used here only to identify the tools being monitored.
 
 # 简体中文
 
-**一眼看清 AI 用量。** macOS 菜单栏里的 **Claude** / **Codex** 额度表盘。
+**用 Claude 用到一半突然被限速，却不知道剩多少额度？**  
+QuotaLens 解决这个问题 —— 一个 macOS 菜单栏表盘，实时显示你的 **Claude** 和 **Codex** 额度，在耗尽之前就能看到。
 
 ## <img src="docs/icons/gauge.svg" height="20" align="top" /> 概览
 
-QuotaLens 常驻菜单栏,显示一个圆环 + 当前最高占用的百分比。点开是一个面板,每个来源一张卡:
-权威的 5 小时 / 7 天额度、当前会话、24 小时时间线。另有独立的统计窗口,按任意时间范围拆解
-token、成本、缓存。
+QuotaLens 常驻菜单栏,显示一个圆环 + 当前最高占用的百分比。点开是一个面板,每个来源一张卡:权威的 5 小时 / 7 天额度、当前会话、24 小时时间线。另有独立的统计窗口,按任意时间范围拆解 token、成本、缓存。
 
 并排追踪两个工具:
 
@@ -173,23 +204,27 @@ token、成本、缓存。
 | 联网 | 极小探测、限频 | 不联网 |
 
 - **多 Claude 账号** —— 每个粘一个 token,各成一张卡,整个面板最多 4 个来源。
-- **权威额度** —— Claude 读真实的 `anthropic-ratelimit-unified-*` 响应头;Codex 读本地
-  rollout 文件里的官方 `rate_limits`。
-- **token 过期提醒** —— 粘进来的 token 无法自动续期,过期时卡片标红并发系统通知提醒重新粘贴。
-- **统计窗口** —— token / 成本 / 缓存 + 丝滑的多序列趋势图。可选 今天 / 3天 / 7天 / 30天 /
-  全部 或自定义区间;短范围按小时绘制;hover 看每个点的明细。数据严格跟你配置的来源同步。
+- **权威额度** —— Claude 读真实的 `anthropic-ratelimit-unified-*` 响应头;Codex 读本地 rollout 文件里的官方 `rate_limits`。
+- **token 过期提醒** —— 过期时卡片标红并发系统通知提醒重新粘贴。
+- **统计窗口** —— token / 成本 / 缓存 + 丝滑的多序列趋势图。可选 今天 / 3天 / 7天 / 30天 / 全部 或自定义区间;短范围按小时绘制;hover 看每个点的明细。
 - **开机自启** —— 可选,基于 `SMAppService`。
 
 ## <img src="docs/icons/download.svg" height="20" align="top" /> 安装
 
-**Homebrew:**
+> **环境要求:** macOS 13+。从源码构建需要 Xcode 16+（Swift 6 工具链）。
+
+### 方式一 — Homebrew（推荐）
 
 ```sh
 brew tap mangiapanejohn-dev/tap
 brew install --cask quotalens
 ```
 
-**自行构建**(绕过 Gatekeeper 公证):
+### 方式二 — DMG
+
+从 [最新 Release](https://github.com/mangiapanejohn-dev/QuotaLens/releases/latest) 下载 `QuotaLens.dmg`,打开后拖入 `/Applications`。
+
+### 方式三 — 自行构建
 
 ```sh
 git clone https://github.com/mangiapanejohn-dev/QuotaLens.git
@@ -197,23 +232,12 @@ cd QuotaLens
 make install      # 构建并把 QuotaLens.app 拷到 /Applications
 ```
 
-或生成拖拽式安装的磁盘镜像:
-
-```sh
-brew install create-dmg
-make dmg           # 输出 build/QuotaLens.dmg
-```
-
-**环境要求:** macOS 13+,Swift 6 工具链(Xcode 16+)。
-
 ## <img src="docs/icons/layers.svg" height="20" align="top" /> 添加账号
 
 1. 终端里对目标账号运行 `claude setup-token`,复制 token。
-2. 打开 QuotaLens → 齿轮图标 → **Sources** → **Add Claude account**,起个名字
-   (如 `Pro`、`Max 5x`)并粘贴 token。
+2. 打开 QuotaLens → 齿轮图标 → **Sources** → **Add Claude account**,起个名字并粘贴 token。
 
-Codex 无需配置 —— 自动读 `~/.codex/sessions`。token 过期时卡片标红,在该账号上用
-**replace token** 粘一个新的即可。
+Codex 无需配置 —— 自动读 `~/.codex/sessions`。token 过期时卡片标红,在该账号上用 **replace token** 粘一个新的即可。
 
 ## <img src="docs/icons/activity.svg" height="20" align="top" /> 工作原理
 
@@ -223,12 +247,18 @@ Codex 无需配置 —— 自动读 `~/.codex/sessions`。token 过期时卡片�
 | Codex 实时额度 | `~/.codex/sessions/**/*.jsonl` 里的官方 `rate_limits` | 不联网 |
 | 统计 | 本地 Claude / Codex JSONL 日志里的 token / 成本 | 不联网 |
 
-统计窗口**只反映你配置过的来源** —— 没配 Claude 账号就不会出现 Claude 数据,绝不显示你没设置过的数字。
-
 ## <img src="docs/icons/shield.svg" height="20" align="top" /> 隐私
 
-一切都在本地运行。唯一的联网是 Claude 探测 —— 一个极小、限频的请求,仅用于读取额度响应头。
-token 本地存于 `UserDefaults`,不向任何其它地方发送。
+一切都在本地运行。唯一的联网是 Claude 探测 —— 一个极小、限频的请求,仅用于读取额度响应头。token 本地存于 `UserDefaults`,不向任何其它地方发送。
+
+## Roadmap
+
+- [ ] 支持 Gemini / OpenAI 来源
+- [ ] 菜单栏颜色阈值（绿 → 黄 → 红）
+- [ ] 每周用量摘要通知
+- [ ] iCloud 多 Mac 同步
+
+有想法？[提个 Issue](https://github.com/mangiapanejohn-dev/QuotaLens/issues) —— 欢迎 PR。
 
 ## License
 
