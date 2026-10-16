@@ -12,23 +12,30 @@ enum IncrementalFileReader {
         defer { try? handle.close() }
 
         let fileSize: UInt64 = (try? handle.seekToEnd()) ?? 0
-        if fileSize <= offset {
-            return ([], offset) // nothing new (or file truncated/rotated)
+        // A file smaller than the remembered offset was truncated or replaced
+        // (compaction, rotation). Restart from the top: keeping the stale offset
+        // would block every future read of this file. Callers de-dupe by
+        // `dedupeKey`, so re-reading already-seen lines is safe.
+        var start = offset
+        if fileSize < offset {
+            start = 0
+        } else if fileSize == offset {
+            return ([], offset) // nothing new
         }
         do {
-            try handle.seek(toOffset: offset)
+            try handle.seek(toOffset: start)
         } catch {
-            return ([], offset)
+            return ([], start)
         }
         let data = (try? handle.readToEnd()) ?? Data()
-        guard !data.isEmpty else { return ([], offset) }
+        guard !data.isEmpty else { return ([], start) }
 
         // Consume up to and including the last newline.
         guard let lastNewline = data.lastIndex(of: 0x0A) else {
-            return ([], offset) // no complete line yet
+            return ([], start) // no complete line yet
         }
         let consumed = data[..<(lastNewline + 1)]
-        let newOffset = offset + UInt64(consumed.count)
+        let newOffset = start + UInt64(consumed.count)
 
         let text = String(decoding: consumed, as: UTF8.self)
         let lines = text.split(separator: "\n", omittingEmptySubsequences: true).map(String.init)
